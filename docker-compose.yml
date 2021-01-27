@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    networks:
+      - app-network
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  stock-service:
+    image: deliverymuch/backend-challenge:stock-service
+    networks:
+      - app-network
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+    restart: on-failure
+
+  stock-control-api:
+    build: ./
+    entrypoint: ./.docker/entrypoint.sh
+    container_name: stock-control-api
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - 3001:3000
+    volumes:
+      - ./:/home/node/express
+    # depends_on:
+    #   - rabbitmq
+
+networks:
+  app-network:
+    driver: bridge
