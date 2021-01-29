@@ -1,17 +1,12 @@
 {
-  "type": "postgres",
-  "host": "localhost",
-  "port": 5432,
-  "username": "postgres",
-  "password": "postgres",
-  "database": "seu-ze-stock-control",
+  "type": "mongodb",
+  "host": "mongo-db",
+  "port": 27017,
+  "username": "arthur",
+  "password": "arthur",
+  "database": "seuzestockcontrol",
+  "useUnifiedTopology": true,
   "entities": [
-    "./src/modules/**/infra/typeorm/entities/*.ts"
-  ],
-  "migrations": [
-    "./src/shared/infra/typeorm/migrations/*.ts"
-  ],
-  "cli": {
-    "migrationsDir": "./src/shared/infra/typeorm/migrations"
-  }
+    "./src/modules/**/infra/typeorm/schemas/*.schemas.ts"
+  ]
 }
