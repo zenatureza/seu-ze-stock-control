@@ -7,6 +7,6 @@
   "database": "seuzestockcontrol",
   "useUnifiedTopology": true,
   "entities": [
-    "./src/modules/**/infra/typeorm/schemas/*.schemas.ts"
+    "./src/modules/**/infra/typeorm/schemas/*.schema.ts"
   ]
 }
