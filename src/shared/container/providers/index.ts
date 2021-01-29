@@ -1,1 +1,2 @@
 import './QueueProvider';
+import './CacheProvider';

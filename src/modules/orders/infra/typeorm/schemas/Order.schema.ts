@@ -1,5 +1,4 @@
-// import Product from '@modules/products/infra/typeorm/schemas/Product';
-
+import Product from '@modules/products/infra/typeorm/schemas/Product';
 import {
   ObjectID,
   Entity,
@@ -17,8 +16,8 @@ class Order {
   @Column()
   total: Number;
 
-  // @Column(type => Product)
-  // products: Product[];
+  @Column(type => Product)
+  products: Product[];
 
   @CreateDateColumn()
   created_at: Date;

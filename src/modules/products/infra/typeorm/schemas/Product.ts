@@ -26,6 +26,11 @@ class Product {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  constructor(name: string, quantity: number) {
+    this.name = name;
+    this.quantity = quantity;
+  }
 }
 
 export default Product;

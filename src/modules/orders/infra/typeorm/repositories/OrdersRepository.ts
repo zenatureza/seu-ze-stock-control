@@ -10,6 +10,7 @@ import IOrdersRepository from '@modules/orders/repositories/IOrdersRepository';
 
 import Order from '../schemas/Order.schema';
 import ICreateOrderDTO from '@modules/orders/dtos/CreateOrderDTO';
+import Product from '@modules/products/infra/typeorm/schemas/Product';
 
 class OrdersRepository implements IOrdersRepository {
   private ormRepository: MongoRepository<Order>;
@@ -19,11 +20,16 @@ class OrdersRepository implements IOrdersRepository {
   }
 
   public async create({ products, total }: ICreateOrderDTO): Promise<Order> {
-    // const orderProducts = products.map(x => )
+    const productsDb: Product[] = [];
+    products.forEach(p => {
+      const product = new Product(p.name, p.quantity);
 
-    const order = this.ormRepository.create({
-      total,
+      productsDb.push(product);
     });
+
+    const order = new Order();
+    order.products = productsDb;
+    order.total = total;
 
     await this.ormRepository.save(order);
 

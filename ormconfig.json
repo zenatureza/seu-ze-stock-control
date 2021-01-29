@@ -1,9 +1,7 @@
 {
   "type": "mongodb",
-  "host": "mongo-db",
+  "host": "localhost",
   "port": 27017,
-  "username": "arthur",
-  "password": "arthur",
   "database": "seuzestockcontrol",
   "useUnifiedTopology": true,
   "entities": [
