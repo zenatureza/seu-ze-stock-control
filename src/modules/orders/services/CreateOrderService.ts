@@ -48,6 +48,7 @@ class CreateOrderService {
     // const products = this.cacheProvider.recover<Product[]>(
     //   keys
     // );
+
     const productsCache = [];
 
     const product = await this.cacheProvider.recover<Product>(keys[0]);

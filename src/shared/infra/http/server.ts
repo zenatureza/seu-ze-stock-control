@@ -6,6 +6,7 @@ import routes from './routes';
 
 import '@shared/infra/typeorm';
 import '@shared/container';
+import '@shared/container/providers/QueueProvider/implementations/RabbitMqProvider';
 
 const app = express();
 
@@ -17,5 +18,3 @@ app.get('/test', (request, response) => response.json({ message: '👨‍💻 te
 app.listen(3000, () => {
   console.log('🌴 starting again node server on port 3000...');
 });
-
-// /?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false

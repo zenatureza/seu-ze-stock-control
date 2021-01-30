@@ -4,6 +4,7 @@ import { container } from 'tsyringe';
 import CreateOrderService from '@modules/orders/services/CreateOrderService';
 
 export default class OrdersControllers {
+  // TODO: Split in 2 methods
   // /:id?
   public async index(request: Request, response: Response): Promise<Response> {
     const { id } = request.params;

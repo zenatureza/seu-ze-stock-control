@@ -1,2 +1,2 @@
-import './QueueProvider';
+// import './QueueProvider';
 import './CacheProvider';

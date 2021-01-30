@@ -1,13 +1,13 @@
 import { container } from 'tsyringe';
-import IQueueProvider from './interfaces/IQueueProvider';
+// import IQueueProvider from './interfaces/IQueueProvider';
 
-import RabbitMqProvider from './implementations/RabbitMqProvider';
+// import RabbitMqProvider from './implementations/RabbitMqProvider';
 
-const providers = {
-  rabbitMq: RabbitMqProvider,
-};
+// const providers = {
+//   rabbitMq: RabbitMqProvider,
+// };
 
-container.registerSingleton<IQueueProvider>(
-  'QueueProvider',
-  providers.rabbitMq,
-);
+// container.registerSingleton<IQueueProvider>(
+//   'QueueProvider',
+//   providers.rabbitMq,
+// );
