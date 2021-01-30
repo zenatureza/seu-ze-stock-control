@@ -9,7 +9,7 @@ import {
 import IOrdersRepository from '@modules/orders/repositories/IOrdersRepository';
 
 import Order from '../schemas/Order.schema';
-import ICreateOrderDTO from '@modules/orders/dtos/CreateOrderDTO';
+import ICreateOrderDTO from '@modules/orders/dtos/ICreateOrderDTO';
 import Product from '@modules/products/infra/typeorm/schemas/Product';
 
 class OrdersRepository implements IOrdersRepository {

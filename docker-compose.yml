@@ -37,27 +37,34 @@ services:
     depends_on:
       - rabbitmq
       - redis
-
     links:
-      - database
-      # - mongodb
+      - mongodb
     # command: ./wait-for.sh mongo-db:27017 -- ./entrypoint.sh
 
-  database:
+  # got from: stackoverflow.com/a/33397913/174843
+  mongo-seed:
+    build: ./mongo-seed
+    links:
+      - mongodb
+    networks:
+      - app-network
+    depends_on:
+      - mongodb
+    # command: ./wait-for.sh mongodb:27017 -- ./mongo-seed/entrypoint.sh
+
+  mongodb:
+    container_name: mongodb
     image: mongo
-  # mongodb:
-  #   container_name: mongodb
-  #   image: mongo
-  #   # environment:
-  #   #   MONGO_INITDB_ROOT_USERNAME: arthur
-  #   #   MONGO_INITDB_ROOT_PASSWORD: arthur
-  #   ports:
-  #     - 27017:27017
-  #   volumes:
-  #     - ./database/:/data/db
-  #   networks:
-  #     - app-network
-  #     # - db-network
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: arthur
+    #   MONGO_INITDB_ROOT_PASSWORD: arthur
+    ports:
+      - 27017:27017
+    volumes:
+      - ./database/:/data/db
+    networks:
+      - app-network
+      # - db-network
 
   redis:
     image: redis:alpine

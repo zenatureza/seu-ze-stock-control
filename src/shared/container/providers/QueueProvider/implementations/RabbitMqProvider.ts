@@ -43,13 +43,14 @@ class RabbitmqServer implements IQueueProvider {
 const stockIncrementConsumer = async () => {
   const routingKey = 'incremented';
   const rabbitMqServer = new RabbitmqServer(
-    'amqp://guest:guest@localhost:5672',
+    'amqp://guest:guest@rabbitmq:5672',
     routingKey,
     `${routingKey}-queue`,
   );
 
   await rabbitMqServer.start();
   await rabbitMqServer.consume(message => {
+    // console.log('💧 increment: ', message.content.toString());
     rabbitMqServer.updateProductInStockService.execute(message, 'increment');
   });
 };
@@ -57,13 +58,14 @@ const stockIncrementConsumer = async () => {
 const stockDecrementConsumer = async () => {
   const routingKey = 'decremented';
   const rabbitMqServer = new RabbitmqServer(
-    'amqp://guest:guest@localhost:5672',
+    'amqp://guest:guest@rabbitmq:5672',
     routingKey,
     `${routingKey}-queue`,
   );
 
   await rabbitMqServer.start();
   await rabbitMqServer.consume(message => {
+    // console.log('🔥 decrement: ', message.content.toString());
     rabbitMqServer.updateProductInStockService.execute(message, 'decrement');
   });
 };

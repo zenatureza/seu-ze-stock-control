@@ -1,4 +1,4 @@
-import ICreateOrderDTO from '../dtos/CreateOrderDTO';
+import ICreateOrderDTO from '../dtos/ICreateOrderDTO';
 import Order from '../infra/typeorm/schemas/Order.schema';
 
 export default interface IOrdersRepository {

@@ -47,18 +47,6 @@ export default class OrdersControllers {
       products,
     });
 
-    // const createdOrder = {
-    //   id: '42',
-    //   products: [
-    //     {
-    //       name: 'Kiwi',
-    //       quantity: 1,
-    //       price: 9.21,
-    //     },
-    //   ],
-    //   total: 9.21,
-    // };
-
     // Success...
     return response.json(createdOrder);
   }

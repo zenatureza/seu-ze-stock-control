@@ -1,8 +1,8 @@
 {
   "type": "mongodb",
-  "host": "localhost",
+  "host": "mongodb",
   "port": 27017,
-  "database": "seuzestockcontrol",
+  "database": "seuze",
   "useUnifiedTopology": true,
   "entities": [
     "./src/modules/**/infra/typeorm/schemas/*.schema.ts"

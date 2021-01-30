@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 
-import ICreateOrderProductDTO from '../dtos/CreateOrderProductDTO';
+import ICreateOrderProductDTO from '../dtos/ICreateOrderProductDTO';
 import Order from '../infra/typeorm/schemas/Order.schema';
 import IOrdersRepository from '@modules/orders/repositories/IOrdersRepository';
 import Product from '@modules/products/infra/typeorm/schemas/Product';
@@ -51,6 +51,7 @@ class CreateOrderService {
 
     const productsCache = [];
 
+    // TODO: Use GetProductFromStockService?
     const product = await this.cacheProvider.recover<Product>(keys[0]);
     console.log(product);
 
