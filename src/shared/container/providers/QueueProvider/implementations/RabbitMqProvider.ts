@@ -1,19 +1,19 @@
 import { Connection, Channel, connect, Message, ConsumeMessage } from 'amqplib';
 import { container, inject, injectable } from 'tsyringe';
-import RedisCacheProvider from '../../CacheProvider/implementations/RedisCacheProvider';
-// import ICacheProvider from '../../CacheProvider/interfaces/ICacheProvider';
+
+import UpdateProductStockService from '@modules/products/services/UpdateProductInStockService';
 import IQueueProvider from '../interfaces/IQueueProvider';
 
-// export default
+// TODO: Refactor this file, because it's not a provider itself
 class RabbitmqServer implements IQueueProvider {
   private conn: Connection;
   private channel: Channel;
-  public cacheProvider: RedisCacheProvider;
+  public updateProductInStockService: UpdateProductStockService;
 
   constructor(
     private uri: string,
     private routingKey: string,
-    private queue: string, // @inject('CacheProvider') // private cacheProvider: ICacheProvider,
+    private queue: string,
   ) {}
 
   async start(): Promise<void> {
@@ -24,20 +24,10 @@ class RabbitmqServer implements IQueueProvider {
     this.channel.assertQueue(this.queue, { durable: true });
     this.channel.bindQueue(this.queue, 'stock', this.routingKey);
 
-    this.cacheProvider = container.resolve(RedisCacheProvider);
+    this.updateProductInStockService = container.resolve(
+      UpdateProductStockService,
+    );
   }
-
-  // async publishInQueue(queue: string, message: string) {
-  //   return this.channel.sendToQueue(queue, Buffer.from(message));
-  // }
-
-  // async publishInExchange(
-  //   exchange: string,
-  //   routingKey: string,
-  //   message: string,
-  // ): Promise<boolean> {
-  //   return this.channel.publish(exchange, routingKey, Buffer.from(message));
-  // }
 
   async consume(callback: (message: ConsumeMessage) => void) {
     return this.channel.consume(this.queue, message => {
@@ -59,9 +49,9 @@ const stockIncrementConsumer = async () => {
   );
 
   await rabbitMqServer.start();
-  await rabbitMqServer.consume(message =>
-    console.log('👾 incrementing: ', message.content.toString()),
-  );
+  await rabbitMqServer.consume(message => {
+    rabbitMqServer.updateProductInStockService.execute(message, 'increment');
+  });
 };
 
 const stockDecrementConsumer = async () => {
@@ -73,22 +63,10 @@ const stockDecrementConsumer = async () => {
   );
 
   await rabbitMqServer.start();
-
   await rabbitMqServer.consume(message => {
-    const productName = message.content.toString();
-    console.log('🔥 decrementing: ', productName);
-
-    // TODO: should call stockUpdateService.handle(productName: string, operation: 'incremented' | 'decremented')
-    rabbitMqServer.cacheProvider
-      .recover<number>(productName)
-      .then(cacheQuantity => {
-        if (typeof cacheQuantity !== 'number') return;
-
-        const quantity = cacheQuantity + 1;
-        rabbitMqServer.cacheProvider.save(productName, quantity);
-      });
+    rabbitMqServer.updateProductInStockService.execute(message, 'decrement');
   });
 };
 
-// stockIncrementConsumer();
+stockIncrementConsumer();
 stockDecrementConsumer();
