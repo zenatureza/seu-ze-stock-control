@@ -1,4 +1,4 @@
-import { inject, injectable } from 'tsyringe';
+import { container, inject, injectable } from 'tsyringe';
 
 import ICreateOrderProductDTO from '../dtos/ICreateOrderProductDTO';
 import Order from '../infra/typeorm/schemas/Order.schema';
@@ -38,20 +38,20 @@ class CreateOrderService {
       );
     }
 
-    try {
-      const order = await this.ordersRepository.create({
-        products,
-        total: getOrderTotalPrice(availableProducts),
-      });
+    const createdOrder = await this.ordersRepository.create({
+      // products,
+      products: availableProducts,
+      total: getOrderTotalPrice(
+        availableProducts.map(p => {
+          return [p.quantity, p.price];
+        }),
+      ),
+    });
 
-      // after creating the order, should update all products quantites
-      await this.updateProductsQuantitiesInStockService.execute(products);
+    // after creating the order, should update all products quantites
+    await this.updateProductsQuantitiesInStockService.execute(products);
 
-      return order;
-    } catch (error) {
-      console.log(error);
-      throw new AppError('Sorry, but an unexpected error occurred.', 500);
-    }
+    return createdOrder;
   }
 }
 

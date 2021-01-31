@@ -14,6 +14,7 @@ import Product from '@modules/products/infra/typeorm/schemas/Product.schema';
 
 class OrdersRepository implements IOrdersRepository {
   private ormRepository: MongoRepository<Order>;
+  private take = 10;
 
   constructor() {
     this.ormRepository = getMongoRepository(Order);
@@ -21,6 +22,7 @@ class OrdersRepository implements IOrdersRepository {
 
   public async create({ products, total }: ICreateOrderDTO): Promise<Order> {
     const productsDb: Product[] = [];
+
     products.forEach(p => {
       const product = new Product(p.name, p.quantity);
 
@@ -40,6 +42,15 @@ class OrdersRepository implements IOrdersRepository {
     const order = await this.ormRepository.findOne(id);
 
     return order;
+  }
+
+  public async getPaged(page: number): Promise<Order[] | undefined> {
+    const orders: Order[] = await this.ormRepository.find({
+      skip: (page - 1) * this.take,
+      take: this.take,
+    });
+
+    return orders;
   }
 }
 

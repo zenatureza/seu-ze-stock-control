@@ -1,5 +1,5 @@
 import IProductsRepository from '@modules/products/repositories/IProductsRepository';
-import { getMongoRepository, MongoRepository } from 'typeorm';
+import { getMongoRepository, In, MongoRepository } from 'typeorm';
 import Product from '../schemas/Product.schema';
 
 class ProductsRepository implements IProductsRepository {
@@ -22,7 +22,9 @@ class ProductsRepository implements IProductsRepository {
   ): Promise<Product[] | undefined> {
     return await this.ormRepository.find({
       where: {
-        name: productsNames,
+        name: {
+          $in: productsNames,
+        },
       },
     });
   }

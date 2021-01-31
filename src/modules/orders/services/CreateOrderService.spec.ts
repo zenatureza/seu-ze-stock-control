@@ -68,12 +68,9 @@ describe('CreateOrder', () => {
     });
 
     expect(order).toHaveProperty('id');
-    // expect(order).toHaveProperty('created_at');
-    // expect(order.total).toBe(total);
-    // expect(order.created_at).toBe(Date.now);
-    // expect(order.products.map(p => p.name).sort()).toEqual(
-    //   products.map(p => p.name).sort(),
-    // );
+    order.products.forEach(product => {
+      expect(product).toHaveProperty('price');
+    });
   });
 
   it('should not be able to create a new order when some product quantity is bigger than its stock', async () => {

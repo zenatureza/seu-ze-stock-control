@@ -1,12 +1,11 @@
-import IGetProductFromStockDTO from '@modules/products/dtos/IGetProductFromStockDTO';
-
 export default function getOrderTotalPrice(
-  products: IGetProductFromStockDTO[],
+  quantitiesXPrices: [number, number][],
 ) {
   let total = 0;
 
-  products.forEach(product => {
-    total += product.price * product.quantity;
+  quantitiesXPrices.forEach(item => {
+    // total += quantity * price
+    total += item[0] * item[1];
   });
 
   return total;

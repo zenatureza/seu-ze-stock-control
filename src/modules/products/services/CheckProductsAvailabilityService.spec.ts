@@ -8,6 +8,9 @@ let productsRepositoryMock: ProductsRepositoryMock;
 let cacheProviderMock: RedisCacheProviderMock;
 let checkProductsAvailabilityService: CheckProductsAvailabilityService;
 
+let garlicCacheQuantity = 6;
+let kiwiDbQuantity = 4;
+
 describe('CheckProductsAvailabilityService', () => {
   beforeEach(() => {
     productsRepositoryMock = new ProductsRepositoryMock([
@@ -18,11 +21,13 @@ describe('CheckProductsAvailabilityService', () => {
       },
       {
         name: 'Kiwi',
-        quantity: 4,
+        quantity: kiwiDbQuantity,
         price: 10,
       },
     ]);
-    cacheProviderMock = new RedisCacheProviderMock();
+    cacheProviderMock = new RedisCacheProviderMock({
+      Garlic: garlicCacheQuantity.toString(),
+    });
 
     checkProductsAvailabilityService = new CheckProductsAvailabilityService(
       cacheProviderMock,
@@ -74,5 +79,53 @@ describe('CheckProductsAvailabilityService', () => {
     await expect(
       checkProductsAvailabilityService.execute(orderProducts),
     ).rejects.toBeInstanceOf(AppError);
+  });
+
+  it('should throw error when any product quantity is negative', async () => {
+    let orderProducts: ICreateOrderProductDTO[] = [];
+    orderProducts.push({
+      name: 'Garlic',
+      quantity: 2,
+      price: 10,
+    });
+    orderProducts.push({
+      name: 'Kiwi',
+      quantity: -1,
+      price: 10,
+    });
+
+    await expect(
+      checkProductsAvailabilityService.execute(orderProducts),
+    ).rejects.toBeInstanceOf(AppError);
+  });
+
+  it('should get most updated quantity from cache', async () => {
+    const orderProducts = [
+      {
+        name: 'Garlic',
+        quantity: 2,
+        price: 10,
+      },
+    ];
+
+    const products = (await checkProductsAvailabilityService.execute(
+      orderProducts,
+    )) as any;
+
+    expect(products[0].quantity).toBe(garlicCacheQuantity);
+  });
+
+  it('should set cache quantity, if key not present on it, with database value', async () => {
+    const result = (await checkProductsAvailabilityService.execute([
+      {
+        name: 'Kiwi',
+        quantity: 2,
+        price: 10,
+      },
+    ])) as any;
+
+    cacheProviderMock.setCacheData({});
+
+    expect(result[0].quantity).toBe(kiwiDbQuantity);
   });
 });

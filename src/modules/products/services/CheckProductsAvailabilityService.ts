@@ -5,6 +5,7 @@ import AppError from '@shared/errors/AppError';
 import IGetProductFromStockDTO from '../dtos/IGetProductFromStockDTO';
 import IProductsRepository from '../repositories/IProductsRepository';
 import ICreateOrderProductDTO from '@modules/orders/dtos/ICreateOrderProductDTO';
+import isNumeric from '@shared/infra/utils/isNumeric';
 
 @injectable()
 class CheckProductsAvailabilityService {
@@ -17,22 +18,37 @@ class CheckProductsAvailabilityService {
   ) {}
 
   public async execute(
-    // productsNames: string[],
-    products: ICreateOrderProductDTO[],
+    orderProducts: ICreateOrderProductDTO[],
   ): Promise<IGetProductFromStockDTO[] | undefined> {
-    const productsNames = products.map(p => p.name);
+    const productsNames = orderProducts.map(p => p.name);
 
     // all products must be in the database
     const productsDb = await this.productsRepository.findByNames(productsNames);
-    // console.log('👨‍💻 productsDb: ', productsDb);
-    // console.log('👨‍💻 productsNames: ', productsNames);
 
     if (
       !productsDb ||
       productsDb.length <= 0 ||
-      productsDb.length !== productsNames.length
+      productsDb.length < productsNames.length ||
+      !orderProducts.every(op =>
+        productsDb.map(db => db.name).includes(op.name),
+      )
     ) {
       throw new AppError('Could not find these products.');
+    }
+
+    // validates requested products quantities
+    const productsWithInvalidQuantities = orderProducts.filter(
+      op => op.quantity <= 0,
+    );
+    if (
+      productsWithInvalidQuantities &&
+      productsWithInvalidQuantities.length > 0
+    ) {
+      throw new AppError(
+        `The following products quantities are invalid: ${productsWithInvalidQuantities
+          .map(p => p.name)
+          .join(', ')}`,
+      );
     }
 
     // tries to get products most updated quantities
@@ -40,30 +56,39 @@ class CheckProductsAvailabilityService {
 
     const result: IGetProductFromStockDTO[] = [];
 
-    productsDb.forEach(productDb => {
-      const productCacheValue = productsCache?.get(productDb.name);
+    let unavailableProducts: string[] = [];
+    await orderProducts.forEach(async orderProduct => {
+      const productDb = productsDb.find(
+        p => p.name === orderProduct.name,
+      ) as any;
 
-      let productAvailableQuantity = -1;
-      if (productCacheValue) {
-        productAvailableQuantity = parseInt(productCacheValue);
+      let productAvailableQuantity = productDb.quantity;
+
+      // tries retrieves most recent quantity
+      if (productsCache && productsCache.size > 0) {
+        const productCacheValue = productsCache.get(productDb.name) as any;
+
+        if (isNumeric(productCacheValue) && parseInt(productCacheValue) >= 0) {
+          productAvailableQuantity = parseInt(productCacheValue);
+        } else {
+          productAvailableQuantity = productDb.quantity;
+        }
       } else {
-        productAvailableQuantity = productDb.quantity;
+        // should set cache
+        await this.cacheProvider.save(
+          orderProduct.name,
+          productAvailableQuantity,
+        );
       }
 
-      // products quantities are never negative values
-      if (productAvailableQuantity < 0) {
-        throw new AppError(`${productDb.name} is unavailable.`);
-      }
+      const productOrderQuantity = orderProduct.quantity;
 
-      // checks if products quantities needed are available
-      const productOrderQuantity = products.find(p => p.name === productDb.name)
-        ?.quantity;
       if (
         !productOrderQuantity ||
-        productOrderQuantity < 0 ||
         productOrderQuantity > productAvailableQuantity
       ) {
-        throw new AppError(`${productDb.name} is unavailable.`);
+        unavailableProducts.push(productDb.name);
+        return;
       }
 
       const productDTO: IGetProductFromStockDTO = {
@@ -74,6 +99,14 @@ class CheckProductsAvailabilityService {
 
       result.push(productDTO);
     });
+
+    if (unavailableProducts.length > 0) {
+      throw new AppError(
+        `The following products are unavailable in the specified quantities: ${unavailableProducts.join(
+          ', ',
+        )}`,
+      );
+    }
 
     return result;
   }

@@ -6,6 +6,8 @@ import IProductsRepository from '../repositories/IProductsRepository';
 import AppError from '@shared/errors/AppError';
 import ICreateOrderProductDTO from '@modules/orders/dtos/ICreateOrderProductDTO';
 import Product from '../infra/typeorm/schemas/Product.schema';
+import getProductUpdatedQuantity from './GetProductUpdatedQuantityService';
+import isNumeric from '@shared/infra/utils/isNumeric';
 
 @injectable()
 class UpdateProductsQuantitiesInStockService {
@@ -20,49 +22,69 @@ class UpdateProductsQuantitiesInStockService {
   public async execute(
     orderProducts: ICreateOrderProductDTO[],
   ): Promise<Product[]> {
+    const productsDb = await this.productsRepository.findByNames(
+      orderProducts.map(p => p.name),
+    );
+
+    // ensures all products in database
+    if (
+      !productsDb ||
+      productsDb.length <= 0 ||
+      productsDb.length < orderProducts.length ||
+      !orderProducts.every(op =>
+        productsDb.map(db => db.name).includes(op.name),
+      )
+    ) {
+      // console.log('🐬 throwing AppError..');
+      throw new AppError('Could not find these products.');
+    }
+
     // tries to get most recent data
     const productsCache = await this.cacheProvider.recoverAll(
       orderProducts.map(p => p.name),
     );
 
-    orderProducts.forEach(async product => {
+    console.log('🚬 productsCache: ', productsCache);
+
+    orderProducts.forEach(async orderProduct => {
       let updatedQuantity = 0;
+      const productDb = productsDb.find(
+        x => x.name === orderProduct.name,
+      ) as any;
 
       // if cache has the most recent data..
-      if (productsCache && productsCache.has(product.name)) {
-        const currentCacheQuantity = productsCache.get(product.name);
+      if (productsCache && productsCache.has(orderProduct.name)) {
+        const currentCacheQuantity = productsCache.get(orderProduct.name);
 
-        if (typeof currentCacheQuantity === 'string') {
-          updatedQuantity = Math.abs(
-            parseInt(currentCacheQuantity) - product.quantity,
+        // ensures a valid quantity
+        if (isNumeric(currentCacheQuantity)) {
+          updatedQuantity = getProductUpdatedQuantity(
+            parseInt(currentCacheQuantity as any),
+            orderProduct.quantity,
           );
-          console.log(`🔥 ${product.name}_updated_quantity:`, updatedQuantity);
-
-          await this.cacheProvider.save(product.name, updatedQuantity);
+        } else {
+          // updates cache with a valid quantity
+          updatedQuantity = getProductUpdatedQuantity(
+            productDb.quantity,
+            orderProduct.quantity,
+          );
         }
+
+        await this.cacheProvider.save(orderProduct.name, updatedQuantity);
       }
-    });
+      // stores product quantity in cache if not found
+      else {
+        await this.cacheProvider.save(
+          orderProduct.name,
+          getProductUpdatedQuantity(productDb.quantity, orderProduct.quantity),
+        );
+      }
 
-    const productsDb = await this.productsRepository.findByNames(
-      orderProducts.map(p => p.name),
-    );
-
-    if (!productsDb) {
-      throw new AppError('Could not finish the transaction.');
-    }
-
-    // updates mongodb
-    productsDb?.forEach(productDb => {
-      const orderProductQuantity = orderProducts.find(
-        x => x.name === productDb.name,
-      )?.quantity;
-      const updatedQuantity = Math.abs(
-        productDb.quantity - (orderProductQuantity ?? 0),
+      // updates database quantities
+      productDb.quantity = getProductUpdatedQuantity(
+        productDb.quantity,
+        orderProduct.quantity,
       );
-
-      if (typeof updatedQuantity === 'number') {
-        productDb.quantity = updatedQuantity;
-      }
     });
 
     await this.productsRepository.saveAll(productsDb);

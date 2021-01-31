@@ -1,6 +1,6 @@
-import ICreateOrderProductDTO from "./ICreateOrderProductDTO";
+import ICreateOrderProductDTO from './ICreateOrderProductDTO';
 
-export default interface {
+export default interface IGetOrderDTO {
   id: string;
   products: ICreateOrderProductDTO[];
   total: number;

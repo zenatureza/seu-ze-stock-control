@@ -25,7 +25,11 @@ describe('getOrderTotalPrice', () => {
       quantity: kiwi.quantity,
     });
 
-    const totalPrice = getOrderTotalPrice(orderProducts);
+    const totalPrice = getOrderTotalPrice(
+      orderProducts.map(item => {
+        return [item.quantity, item.price];
+      }),
+    );
 
     expect(totalPrice).toBe(
       garlic.price * garlic.quantity + garlic.price * garlic.quantity,

@@ -1,14 +1,14 @@
 import { Connection, Channel, connect, Message, ConsumeMessage } from 'amqplib';
 import { container, inject, injectable } from 'tsyringe';
 
-import UpdateProductStockService from '@modules/products/services/UpdateProductInStockService';
+import UpdateProductInStockService from '@modules/products/services/UpdateProductInStockService';
 import IQueueProvider from '../interfaces/IQueueProvider';
 
 // TODO: Refactor this file, because it's not a provider itself
 class RabbitmqServer implements IQueueProvider {
   private conn: Connection;
   private channel: Channel;
-  public updateProductInStockService: UpdateProductStockService;
+  public updateProductInStockService: UpdateProductInStockService;
 
   constructor(
     private uri: string,
@@ -18,6 +18,15 @@ class RabbitmqServer implements IQueueProvider {
 
   async start(): Promise<void> {
     this.conn = await connect(this.uri);
+
+    this.conn.on('close', err => {
+      console.log(`🐰 ${this.routingKey} closed: `, err);
+    });
+
+    this.conn.on('error', err => {
+      console.log(`🐰 ${this.routingKey} error: `, err);
+    });
+
     this.channel = await this.conn.createChannel();
 
     // Assert a queue into existence.
@@ -25,7 +34,7 @@ class RabbitmqServer implements IQueueProvider {
     this.channel.bindQueue(this.queue, 'stock', this.routingKey);
 
     this.updateProductInStockService = container.resolve(
-      UpdateProductStockService,
+      UpdateProductInStockService,
     );
   }
 

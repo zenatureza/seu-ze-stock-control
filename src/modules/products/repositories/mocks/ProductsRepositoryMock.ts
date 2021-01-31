@@ -19,15 +19,16 @@ class ProductsRepositoryMock implements IProductsRepository {
   }
 
   public async findByName(productName: string): Promise<Product | undefined> {
-    const product = new Product(
-      productName,
-      this.products.find(p => p.name)?.quantity ?? 10,
-    );
+    // const product = new Product(
+    //   productName,
+    //   this.products.find(p => p.name)?.quantity ?? 10,
+    // );
 
-    Object.assign(product, {
-      id: new ObjectID(),
-      name: productName,
-    });
+    // Object.assign(product, {
+    //   id: new ObjectID(),
+    //   name: productName,
+    // });
+    const product = this.products.find(x => x.name === productName);
 
     return product;
   }
@@ -35,16 +36,13 @@ class ProductsRepositoryMock implements IProductsRepository {
   public async findByNames(
     productsNames: string[],
   ): Promise<Product[] | undefined> {
-    // productsNames.forEach(productName => {
-    //   this.products.push(
-    //     new Product(
-    //       productName,
-    //       this.products.find(p => p.name)?.quantity ?? 10,
-    //     ),
-    //   );
-    // });
+    const result: Product[] | undefined = this.products.filter(x => {
+      if (productsNames.find(pn => x.name)) {
+        return x;
+      }
+    });
 
-    return this.products;
+    return result;
   }
 
   public async save(product: Product): Promise<Product> {

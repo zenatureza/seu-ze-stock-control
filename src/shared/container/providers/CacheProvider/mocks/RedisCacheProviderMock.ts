@@ -20,6 +20,10 @@ export default class RedisCacheProviderMock implements ICacheProvider {
     this.cache[key] = JSON.stringify(value);
   }
 
+  public async exists(key: string): Promise<boolean> {
+    return !!this.cache[key];
+  }
+
   public async recover<T>(key: string): Promise<T | null> {
     const data = this.cache[key];
 
@@ -36,7 +40,9 @@ export default class RedisCacheProviderMock implements ICacheProvider {
     let values: string[] = [];
 
     keys.forEach(key => {
-      values.push(this.cache[key] ?? '10');
+      if (this.cache[key]) {
+        values.push(this.cache[key] ?? '10');
+      }
     });
 
     if (!values) {
@@ -46,7 +52,7 @@ export default class RedisCacheProviderMock implements ICacheProvider {
     let result: Map<string, string> = new Map<string, string>();
     keys.forEach((key, index) => {
       const value: string = values[index] ?? '';
-      if (typeof value === 'string') {
+      if (typeof value === 'string' && this.cache[key]) {
         result.set(key, value);
       }
     });
@@ -66,5 +72,10 @@ export default class RedisCacheProviderMock implements ICacheProvider {
     keys.forEach(key => {
       delete this.cache[key];
     });
+  }
+
+  // ForTestingPurposes
+  public async setCacheData(data: ICacheData) {
+    this.cache = data;
   }
 }

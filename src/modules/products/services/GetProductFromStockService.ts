@@ -31,7 +31,7 @@ class GetProductFromStockService {
     );
 
     // couldn't find product quantity in cache
-    if (typeof productQuantityInCache !== 'number') {
+    if (!productQuantityInCache || typeof productQuantityInCache !== 'number') {
       await this.cacheProvider.save(productName, productInDb.quantity);
     } else {
       // updates product quantity in database
