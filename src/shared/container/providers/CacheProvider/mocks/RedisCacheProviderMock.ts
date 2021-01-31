@@ -1,20 +1,27 @@
-import Redis, { Redis as RedisClient } from 'ioredis';
-import cacheConfig from '@config/cache';
+// import ICacheProvider from '../models/ICacheProvider';
+
 import ICacheProvider from '../interfaces/ICacheProvider';
 
-export default class RedisCacheProvider implements ICacheProvider {
-  private client: RedisClient;
+interface ICacheData {
+  [key: string]: string;
+}
 
-  constructor() {
-    this.client = new Redis(cacheConfig.config.redis);
+export default class RedisCacheProviderMock implements ICacheProvider {
+  private cache: ICacheData = {};
+
+  constructor(cache?: ICacheData) {
+    // this.cache = cache;
+    if (cache) {
+      this.cache = cache;
+    }
   }
 
   public async save(key: string, value: any): Promise<void> {
-    await this.client.set(JSON.stringify(key), JSON.stringify(value));
+    this.cache[key] = JSON.stringify(value);
   }
 
   public async recover<T>(key: string): Promise<T | null> {
-    const data = await this.client.get(key);
+    const data = this.cache[key];
 
     if (!data) {
       return null;
@@ -26,7 +33,11 @@ export default class RedisCacheProvider implements ICacheProvider {
   }
 
   public async recoverAll(keys: string[]): Promise<Map<string, string> | null> {
-    const values = await this.client.mget(keys);
+    let values: string[] = [];
+
+    keys.forEach(key => {
+      values.push(this.cache[key] ?? '10');
+    });
 
     if (!values) {
       return null;
@@ -44,18 +55,16 @@ export default class RedisCacheProvider implements ICacheProvider {
   }
 
   public async invalidate(key: string): Promise<void> {
-    await this.client.del(key);
+    delete this.cache[key];
   }
 
   public async invalidatePrefix(prefix: string): Promise<void> {
-    const keys = await this.client.keys(`${prefix}:*`);
-
-    const pipeline = this.client.pipeline();
+    const keys = Object.keys(this.cache).filter(key =>
+      key.startsWith(`${prefix}:`),
+    );
 
     keys.forEach(key => {
-      pipeline.del(key);
+      delete this.cache[key];
     });
-
-    await pipeline.exec();
   }
 }

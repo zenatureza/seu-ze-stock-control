@@ -3,6 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import ICacheProvider from '@shared/container/providers/CacheProvider/interfaces/ICacheProvider';
 import IGetProductFromStockDTO from '../dtos/IGetProductFromStockDTO';
 import IProductsRepository from '../repositories/IProductsRepository';
+import AppError from '@shared/errors/AppError';
 
 @injectable()
 class GetProductFromStockService {
@@ -20,8 +21,9 @@ class GetProductFromStockService {
   ): Promise<IGetProductFromStockDTO | undefined> {
     const productInDb = await this.productsRepository.findByName(productName);
 
-    // TODO: should throw or use error handling message
-    if (!productInDb) return;
+    if (!productInDb) {
+      throw new AppError('Could not find this product.');
+    }
 
     // first should check on redis (most recent data)
     const productQuantityInCache = await this.cacheProvider.recover<number>(

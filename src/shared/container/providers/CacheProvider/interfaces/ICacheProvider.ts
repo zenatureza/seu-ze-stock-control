@@ -3,4 +3,5 @@ export default interface ICacheProvider {
   recover<T>(key: string): Promise<T | null>;
   invalidate(key: string): Promise<void>;
   invalidatePrefix(prefix: string): Promise<void>;
+  recoverAll(keys: string[]): Promise<Map<string, string> | null>;
 }

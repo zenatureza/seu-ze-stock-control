@@ -70,5 +70,5 @@ const stockDecrementConsumer = async () => {
   });
 };
 
-stockIncrementConsumer();
-stockDecrementConsumer();
+// stockIncrementConsumer();
+// stockDecrementConsumer();

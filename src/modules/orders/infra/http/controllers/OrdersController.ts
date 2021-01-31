@@ -2,43 +2,28 @@ import { json, Request, Response } from 'express';
 import { container } from 'tsyringe';
 
 import CreateOrderService from '@modules/orders/services/CreateOrderService';
+import IGetOrderDTO from '@modules/orders/dtos/IGetOrderDTO';
+import GetOrderService from '@modules/orders/services/GetOrderService';
 
 export default class OrdersControllers {
   // TODO: Split in 2 methods
-  // /:id?
+
+  // [GET] /orders
+  // [GET] /orders/:id
   public async index(request: Request, response: Response): Promise<Response> {
     const { id } = request.params;
     if (id) {
-      return response.json({
-        id: '456',
-        products: [
-          {
-            name: 'Coffee',
-            quantity: 3,
-            price: 2.43,
-          },
-        ],
-        total: 7.29,
-      });
+      const service = container.resolve(GetOrderService);
+
+      const order = await service.execute(id);
+      return response.json(order);
     }
 
-    return response.json({
-      orders: [
-        {
-          id: '123',
-          products: [
-            {
-              name: 'Watermelon',
-              quantity: 2,
-              price: 5.47,
-            },
-          ],
-          total: 10.94,
-        },
-      ],
-    });
+    // TODO: should paginate?
+    return response.json();
   }
 
+  // [POST] /orders
   public async create(request: Request, response: Response): Promise<Response> {
     const { products } = request.body;
 

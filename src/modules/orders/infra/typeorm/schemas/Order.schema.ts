@@ -1,4 +1,4 @@
-import Product from '@modules/products/infra/typeorm/schemas/Product';
+import Product from '@modules/products/infra/typeorm/schemas/Product.schema';
 import {
   ObjectID,
   Entity,

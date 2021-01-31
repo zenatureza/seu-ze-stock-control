@@ -1,13 +1,15 @@
+import GetProductFromStockService from '@modules/products/services/GetProductFromStockService';
 import { Request, Response } from 'express';
+import { container } from 'tsyringe';
 
 export default class ProductsController {
+  // [GET] /products/:name
   public async index(request: Request, response: Response): Promise<Response> {
     const { name } = request.params;
 
-    // TODO: getFromDatabase
+    const service = container.resolve(GetProductFromStockService);
+    const product = await service.execute(name);
 
-    return response.json({
-      products: [{ name, price: 10.5, quantity: 10 }],
-    });
+    return response.json(product);
   }
 }

@@ -10,7 +10,7 @@ import IOrdersRepository from '@modules/orders/repositories/IOrdersRepository';
 
 import Order from '../schemas/Order.schema';
 import ICreateOrderDTO from '@modules/orders/dtos/ICreateOrderDTO';
-import Product from '@modules/products/infra/typeorm/schemas/Product';
+import Product from '@modules/products/infra/typeorm/schemas/Product.schema';
 
 class OrdersRepository implements IOrdersRepository {
   private ormRepository: MongoRepository<Order>;
@@ -32,6 +32,12 @@ class OrdersRepository implements IOrdersRepository {
     order.total = total;
 
     await this.ormRepository.save(order);
+
+    return order;
+  }
+
+  public async get(id: string): Promise<Order | undefined> {
+    const order = await this.ormRepository.findOne(id);
 
     return order;
   }

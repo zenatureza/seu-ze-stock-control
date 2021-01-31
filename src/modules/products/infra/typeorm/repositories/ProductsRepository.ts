@@ -1,6 +1,6 @@
 import IProductsRepository from '@modules/products/repositories/IProductsRepository';
 import { getMongoRepository, MongoRepository } from 'typeorm';
-import Product from '../schemas/Product';
+import Product from '../schemas/Product.schema';
 
 class ProductsRepository implements IProductsRepository {
   private ormRepository: MongoRepository<Product>;
@@ -17,8 +17,22 @@ class ProductsRepository implements IProductsRepository {
     });
   }
 
+  public async findByNames(
+    productsNames: string[],
+  ): Promise<Product[] | undefined> {
+    return await this.ormRepository.find({
+      where: {
+        name: productsNames,
+      },
+    });
+  }
+
   public async save(product: Product): Promise<Product> {
     return await this.ormRepository.save(product);
+  }
+
+  public async saveAll(products: Product[]): Promise<Product[]> {
+    return await this.ormRepository.save(products);
   }
 }
 
