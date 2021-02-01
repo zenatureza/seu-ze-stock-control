@@ -16,8 +16,6 @@ class GetPagedOrderService {
 
     const result: IGetOrderDTO[] = [];
 
-    console.log('🪴 pagedOrders: ', pagedOrders);
-
     if (pagedOrders && pagedOrders.length > 0) {
       pagedOrders.forEach(order => {
         result.push({

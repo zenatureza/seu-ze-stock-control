@@ -6,14 +6,8 @@ RUN touch /home/node/.bashrc | echo "PS1='\w\$ '" >> /home/node/.bashrc
 
 USER node
 
-ENV DIR=/home/node/express
+ENV DIR=/home/app
 
 WORKDIR ${DIR}
 
 COPY ./.docker/entrypoint.sh ${DIR}/entrypoint.sh
-
-# RUN ls ${DIR}
-
-# RUN chmod +x ${DIR}/entrypoint.sh
-# RUN ["chmod", "+x", "entrypoint.sh"]
-

@@ -13,20 +13,24 @@ class RabbitmqServer implements IRabbitMqProvider {
 
   constructor(private routingKey: string, private queue: string) {}
 
-  async start(): Promise<void> {
-    // console.log(
-    //   `amqp://${RabbitMqConfig.username}:${RabbitMqConfig.password}@${RabbitMqConfig.hostname}:${RabbitMqConfig.port}`,
-    // );
-    this.conn = await connect(
-      `amqp://${RabbitMqConfig.username}:${RabbitMqConfig.password}@${RabbitMqConfig.hostname}:${RabbitMqConfig.port}`,
-    );
+  async start(): Promise<any> {
+    try {
+      this.conn = await connect(
+        `amqp://${RabbitMqConfig.username}:${RabbitMqConfig.password}@${RabbitMqConfig.hostname}:${RabbitMqConfig.port}`,
+      );
+    } catch (error) {
+      console.error(error.message);
+      return setTimeout(this.start, 1000);
+    }
 
     this.conn.on('close', err => {
       console.log(`🐰 ${this.routingKey} closed: `, err);
+      return setTimeout(this.start, 1000);
     });
 
     this.conn.on('error', err => {
       console.log(`🐰 ${this.routingKey} error: `, err);
+      return setTimeout(this.start, 1000);
     });
 
     this.channel = await this.conn.createChannel();

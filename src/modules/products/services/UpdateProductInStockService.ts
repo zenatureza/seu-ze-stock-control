@@ -21,19 +21,22 @@ class UpdateProductInStockService {
     },
   };
 
+  private stockControlServiceMessage: string;
+
   constructor(
     @inject('CacheProvider')
     private cacheProvider: ICacheProvider,
 
     @inject('StockServiceLogger')
-    private stockServiceLogger: IStockServiceLogger,
+    private stockServiceLogger: StockServiceLogger,
   ) {}
 
   public async execute(
     stockControlServiceMessage: ConsumeMessage,
     operation: 'increment' | 'decrement',
   ): Promise<number> {
-    // console.log(this.cacheProvider);
+    this.stockControlServiceMessage =
+      stockControlServiceMessage.content?.toString() ?? 'undefined';
 
     // if receives invalid message from stock service
     if (
@@ -41,11 +44,9 @@ class UpdateProductInStockService {
       !stockControlServiceMessage.content ||
       !stockControlServiceMessage.content.toString()
     ) {
-      // TODO: should log this problem!
-      // stock
-      console.log('Invalid message from RabbitMq stock control service.');
       this.stockServiceLogger.log(
         'Invalid message from RabbitMq stock control service.',
+        this.stockControlServiceMessage,
       );
       return -1;
     }
@@ -88,7 +89,10 @@ class UpdateProductInStockService {
 
       return updatedQuantity;
     } catch (error) {
-      this.stockServiceLogger.log('');
+      this.stockServiceLogger.log(
+        'An unexpetec errour occured',
+        this.stockControlServiceMessage,
+      );
       return -1;
     }
   }

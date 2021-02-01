@@ -26,15 +26,22 @@ services:
     container_name: stock-control-api
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - API_PORT=$API_PORT
+      - MONGODB_HOST=$MONGODB_HOST
+      - MONGODB_PORT=$MONGODB_PORT
+      - MONGODB_DATABASE=$MONGODB_DATABASE
+      - MONGODB_USERNAME=$MONGODB_USERNAME
+      - MONGODB_PASSWORD=$MONGODB_PASSWORD
     ports:
-      - 3000:3000
+      - 80:3000
     volumes:
-      - ./:/home/node/express
+      - ./:/home/app
     networks:
       - app-network
       - cache-network
-      # - db-network
+      - db-network
     depends_on:
+      - mongodb
       - rabbitmq
       - redis
     links:
@@ -47,24 +54,28 @@ services:
     links:
       - mongodb
     networks:
-      - app-network
+      - db-network
     depends_on:
       - mongodb
-    # command: ./wait-for.sh mongodb:27017 -- ./mongo-seed/entrypoint.sh
+    environment:
+      - MONGODB_HOST=$MONGODB_HOST
+      - MONGODB_PORT=$MONGODB_PORT
+      - MONGODB_DATABASE=$MONGODB_DATABASE
+      - MONGODB_USERNAME=$MONGODB_USERNAME
+      - MONGODB_PASSWORD=$MONGODB_PASSWORD
 
   mongodb:
     container_name: mongodb
     image: mongo
-    # environment:
-    #   MONGO_INITDB_ROOT_USERNAME: arthur
-    #   MONGO_INITDB_ROOT_PASSWORD: arthur
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $MONGODB_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $MONGODB_PASSWORD
     ports:
       - 27017:27017
     volumes:
       - ./database/:/data/db
     networks:
-      - app-network
-      # - db-network
+      - db-network
 
   redis:
     image: redis:alpine
@@ -78,5 +89,5 @@ networks:
     driver: bridge
   cache-network:
     driver: bridge
-  # db-network:
-  #   driver: bridge
+  db-network:
+    driver: bridge

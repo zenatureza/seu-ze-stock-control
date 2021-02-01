@@ -78,8 +78,6 @@ class OrdersRepositoryMock implements IOrdersRepository {
   }
 
   public async get(id: string): Promise<Order | undefined> {
-    console.log('🔥🔥🔥🔥🔥: ', this.ordersIds);
-
     if (this.ordersIds.some(currentId => currentId === id)) {
       const order = new Order();
 

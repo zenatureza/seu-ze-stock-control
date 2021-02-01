@@ -1,9 +1,16 @@
 # seu-ze-stock-control
 
-Para rodar o sistema, execute:
+## Rodando a aplicação
 
-`docker run --name mongodb -p 27017:27017 -d -t mongo`
+1. Primeiramente deve-se definir as variáveis de ambiente. Para isso, crie um arquivo .env na raíz do projeto.
+   As variáveis necessárias estão descritas no .env.example, basta copiar e colar e atribuir os valores.
 
-`docker-compose up`
+2. Depois, para rodar o sistema basta rodar em um terminal:
 
-# TODO: Fazer a aplicação inteira rodar com docker-compose
+   `docker-compose up --build -d`
+
+## TODO: Como usar a api
+
+## TODO: Rodando os testes
+
+## TODO: Coisas a melhorar

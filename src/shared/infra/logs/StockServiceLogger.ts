@@ -1,23 +1,18 @@
-import { Logger } from 'mongodb';
+import StockServiceLogsRepository from '@modules/products/infra/typeorm/repositories/StockServiceLogsRepository';
+import { inject, injectable } from 'tsyringe';
 
-// TODO: register in container
+@injectable()
 class StockServiceLogger {
-  private logger: Logger;
+  constructor(
+    @inject('StockServiceLogsRepository')
+    private stockServiceLogsRepository: StockServiceLogsRepository,
+  ) {}
 
-  constructor() {
-    this.logger = new Logger('StockServiceLogger');
-  }
-
-  log(message: string) {
-    if (this.logger.isInfo()) {
-      this.logger.info('StockServiceLog: ', {
-        message,
-        date: Date.now(),
-        className: 'StockServiceLog',
-        pid: 0,
-        type: 'StockServiceLog',
-      });
-    }
+  async log(message: string, stockControlServiceMessageContent?: string) {
+    await this.stockServiceLogsRepository.create(
+      message,
+      stockControlServiceMessageContent,
+    );
   }
 }
 

@@ -1,10 +1,8 @@
 #!/bin/bash
 
-cd /home/node/express
+cd /home/app
 
 npm install -g yarn
 
 yarn install
 yarn run dev:server
-# npm install
-# npm run start

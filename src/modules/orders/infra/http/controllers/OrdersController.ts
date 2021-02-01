@@ -1,12 +1,9 @@
-import { json, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
 import CreateOrderService from '@modules/orders/services/CreateOrderService';
-import IGetOrderDTO from '@modules/orders/dtos/IGetOrderDTO';
 import GetOrderService from '@modules/orders/services/GetOrderService';
 import GetPagedOrderService from '@modules/orders/services/GetPagedOrdersService';
-import CheckProductsAvailabilityService from '@modules/products/services/CheckProductsAvailabilityService';
-import UpdateProductsQuantitiesInStockService from '@modules/products/services/UpdateProductsQuantitiesInStockService';
 
 export default class OrdersControllers {
   // TODO: Split in 2 methods

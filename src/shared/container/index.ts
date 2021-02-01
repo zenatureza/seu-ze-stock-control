@@ -9,6 +9,12 @@ import ProductsRepository from '@modules/products/infra/typeorm/repositories/Pro
 import CheckProductsAvailabilityService from '@modules/products/services/CheckProductsAvailabilityService';
 import UpdateProductsQuantitiesInStockService from '@modules/products/services/UpdateProductsQuantitiesInStockService';
 import StockServiceLogger from '@shared/infra/logs/StockServiceLogger';
+import StockServiceLogsRepository from '@modules/products/infra/typeorm/repositories/StockServiceLogsRepository';
+
+container.registerSingleton<StockServiceLogger>(
+  'StockServiceLogger',
+  StockServiceLogger,
+);
 
 container.registerSingleton<CheckProductsAvailabilityService>(
   'CheckProductsAvailabilityService',
@@ -30,7 +36,7 @@ container.registerSingleton<IProductsRepository>(
   ProductsRepository,
 );
 
-container.registerSingleton<StockServiceLogger>(
-  'StockServiceLogger',
-  StockServiceLogger,
+container.registerSingleton<StockServiceLogsRepository>(
+  'StockServiceLogsRepository',
+  StockServiceLogsRepository,
 );
