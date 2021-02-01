@@ -17,7 +17,7 @@ Para rodar a aplicação faça um clone do repositório e siga os seguintes pass
 2. Depois, para rodar o sistema basta rodar em um terminal (na raiz do projeto):
 
    ```shell
-   docker-compose up --build -d
+   sh start.sh
    ```
 
 3. Pronto, agora espere uns instantes enquanto a aplicação inicia (tem que instalar os pacotes npm), e acesse:
@@ -29,6 +29,9 @@ Para rodar a aplicação faça um clone do repositório e siga os seguintes pass
    ```shell
    docker logs stock-control-api
    ```
+
+   Você verá que está onlie quando essa mensagem aparecer:
+   '🌴 starting again node server on port 3000...'
 
 ## Como usar a api
 

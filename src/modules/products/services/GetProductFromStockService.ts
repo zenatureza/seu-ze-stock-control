@@ -40,7 +40,7 @@ class GetProductFromStockService {
     }
 
     const productDTO: IGetProductFromStockDTO = {
-      name: productName,
+      name: productInDb.name,
       price: productInDb.price,
       quantity: productInDb.quantity,
     };

@@ -5,11 +5,14 @@ import { Message } from 'amqplib';
 import UpdateProductInStockService from './UpdateProductInStockService';
 // import StockServiceLogger from '@shared/infra/logs/StockServiceLogger';
 import StockServiceLoggerMock from '@shared/infra/logs/mocks/StockServiceLoggerMock';
+import StockServiceLogger from '@shared/infra/logs/StockServiceLogger';
+import StockServiceLogsRepositoryMock from '../repositories/mocks/StockServiceLogsRepositoryMock';
 
 let cacheProviderMock: RedisCacheProviderMock;
 let updateProductStockService: UpdateProductInStockService;
 let stockControlServiceMessage: Message;
-let stockServiceLogger: StockServiceLoggerMock;
+let stockServiceLogger: StockServiceLogger;
+let stockServiceLogsRepository: StockServiceLogsRepositoryMock;
 
 let kiwiCurrentQuantity = 0;
 
@@ -19,7 +22,9 @@ describe('UpdateProductInStockService', () => {
       Kiwi: kiwiCurrentQuantity.toString(),
     });
 
-    stockServiceLogger = new StockServiceLoggerMock();
+    stockServiceLogger = new StockServiceLogger(
+      new StockServiceLogsRepositoryMock(),
+    );
 
     updateProductStockService = new UpdateProductInStockService(
       cacheProviderMock,
@@ -140,7 +145,9 @@ describe('UpdateProductInStockService', () => {
 describe('UpdateProductInStockService - Logging', () => {
   beforeEach(() => {
     // cacheProviderMock = null as any;
-    stockServiceLogger = new StockServiceLoggerMock();
+    stockServiceLogger = new StockServiceLogger(
+      new StockServiceLogsRepositoryMock(),
+    );
   });
 
   it('should log when could not save product quantity', async () => {

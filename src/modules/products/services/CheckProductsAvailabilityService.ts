@@ -60,9 +60,6 @@ class CheckProductsAvailabilityService {
 
     // tries to get products most updated quantities
     const productsCache = await this.cacheProvider.recoverAll(productsNames);
-    if (orderProducts.some(x => x.name === 'Garlic' && x.quantity === 2)) {
-      console.log('🪴 productsCache: ', productsCache);
-    }
 
     const result: IGetProductFromStockDTO[] = [];
     let unavailableProducts: string[] = [];
