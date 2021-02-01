@@ -15,7 +15,7 @@ class GetOrderService {
     const order = await this.ordersRepository.get(id);
 
     if (!order) {
-      throw new AppError('Could not found the requested order.', 400);
+      throw new AppError('Could not found the requested order.', 404);
     }
 
     const orderProducts = order.products.map(p => {

@@ -1,5 +1,5 @@
 import IProductsRepository from '@modules/products/repositories/IProductsRepository';
-import { getMongoRepository, In, MongoRepository } from 'typeorm';
+import { getMongoRepository, MongoRepository } from 'typeorm';
 import Product from '../schemas/Product.schema';
 
 class ProductsRepository implements IProductsRepository {
@@ -10,9 +10,11 @@ class ProductsRepository implements IProductsRepository {
   }
 
   public async findByName(productName: string): Promise<Product | undefined> {
+    const regex = new RegExp(['^', productName, '$'].join(''), 'i');
+
     return await this.ormRepository.findOne({
       where: {
-        name: productName,
+        name: regex,
       },
     });
   }

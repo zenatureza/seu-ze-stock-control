@@ -20,7 +20,7 @@ services:
       - rabbitmq
     restart: on-failure
 
-  stock-control-api:
+  api:
     build: ./
     entrypoint: ./.docker/entrypoint.sh
     container_name: stock-control-api

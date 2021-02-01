@@ -22,7 +22,7 @@ class GetProductFromStockService {
     const productInDb = await this.productsRepository.findByName(productName);
 
     if (!productInDb) {
-      throw new AppError('Could not find this product.');
+      throw new AppError('Could not find this product.', 404);
     }
 
     // first should check on redis (most recent data)
