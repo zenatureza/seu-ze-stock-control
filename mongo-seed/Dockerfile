@@ -1,6 +1,5 @@
 FROM mongo
 
-# COPY init.json /init.json
 COPY products.csv /products.csv
 
 CMD mongoimport \
@@ -13,4 +12,3 @@ CMD mongoimport \
   --type=csv \
   --file=/products.csv \
   --headerline
-# --jsonArray

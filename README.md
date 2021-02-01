@@ -9,6 +9,10 @@
 
    `docker-compose up --build -d`
 
+3. Pronto, agora espere uns instantes enquanto a aplicação inicia (tem que instalar os pacotes npm), e acesse:
+
+   `http://localhost:3000/orders`
+
 ## TODO: Como usar a api
 
 ## TODO: Rodando os testes
