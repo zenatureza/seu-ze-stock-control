@@ -8,8 +8,11 @@ Para rodar a aplicação faça um clone do repositório e siga os seguintes pass
    As variáveis necessárias estão descritas no .env.example, basta copiar e colar e atribuir os valores em cada uma. Exemplo:
 
    ```shell
-   MONGODB_HOST=mongodb
+   MONGODB_USERNAME=user
    ```
+
+   _Importante_: a variável ambiente MONGODB_HOST deve permanecer com o valor explicitado em .env.example enquanto o nome do serviço
+   do mongodb não for alterado no docker-compose.
 
 2. Depois, para rodar o sistema basta rodar em um terminal (na raiz do projeto):
 
@@ -20,6 +23,12 @@ Para rodar a aplicação faça um clone do repositório e siga os seguintes pass
 3. Pronto, agora espere uns instantes enquanto a aplicação inicia (tem que instalar os pacotes npm), e acesse:
 
    <http://localhost:3000/orders>
+
+   Obs.: para ver os logs da aplicação:
+
+   ```shell
+   docker logs stock-control-api
+   ```
 
 ## Como usar a api
 
