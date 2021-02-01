@@ -12,30 +12,27 @@ class GetOrderService {
   ) {}
 
   public async execute(id: string): Promise<IGetOrderDTO> {
-    try {
-      const order = await this.ordersRepository.get(id);
+    const order = await this.ordersRepository.get(id);
 
-      if (!order) {
-        throw new AppError('Could not found the requested order.', 400);
-      }
-
-      const result: IGetOrderDTO = {
-        id,
-        products: order.products.map(p => {
-          console.log(p.price);
-          return {
-            name: p.name,
-            price: p.price,
-            quantity: p.quantity,
-          };
-        }),
-        total: parseFloat(order.total.toString()),
-      };
-
-      return result;
-    } catch (error) {
+    if (!order) {
       throw new AppError('Could not found the requested order.', 400);
     }
+
+    const orderProducts = order.products.map(p => {
+      return {
+        name: p.name,
+        price: p.price,
+        quantity: p.quantity,
+      };
+    });
+
+    const result: IGetOrderDTO = {
+      id,
+      products: orderProducts,
+      total: order.getTotal(),
+    };
+
+    return result;
   }
 }
 

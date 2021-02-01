@@ -8,6 +8,7 @@ import IGetProductFromStockDTO from '@modules/products/dtos/IGetProductFromStock
 import AppError from '@shared/errors/AppError';
 import getOrderTotalPrice from './GetOrderTotalPriceService';
 import UpdateProductsQuantitiesInStockService from '@modules/products/services/UpdateProductsQuantitiesInStockService';
+import IGetOrderDTO from '../dtos/IGetOrderDTO';
 
 interface IRequest {
   products: ICreateOrderProductDTO[];
@@ -25,22 +26,27 @@ class CreateOrderService {
     @inject('UpdateProductsQuantitiesInStockService')
     private updateProductsQuantitiesInStockService: UpdateProductsQuantitiesInStockService,
   ) {}
-  public async execute({ products }: IRequest): Promise<Order> {
-    const availableProducts:
-      | IGetProductFromStockDTO[]
-      | undefined = await this.checkProductsAvailabilityService.execute(
-      products,
+  public async execute({
+    products: orderProdcts,
+  }: IRequest): Promise<IGetOrderDTO> {
+    const availableProducts: IGetProductFromStockDTO[] = await this.checkProductsAvailabilityService.execute(
+      orderProdcts,
     );
 
-    if (!availableProducts) {
-      throw new AppError(
-        'The order could not be made because the products are unavailable.',
-      );
-    }
-
+    // creates the order itself
     const createdOrder = await this.ordersRepository.create({
       // products,
-      products: availableProducts,
+      products: availableProducts.map(ap => {
+        const orderProduct = orderProdcts.find(
+          op => op.name === ap.name,
+        ) as any;
+
+        return {
+          name: ap.name,
+          price: ap.price,
+          quantity: orderProduct.quantity,
+        };
+      }),
       total: getOrderTotalPrice(
         availableProducts.map(p => {
           return [p.quantity, p.price];
@@ -49,9 +55,25 @@ class CreateOrderService {
     });
 
     // after creating the order, should update all products quantites
-    await this.updateProductsQuantitiesInStockService.execute(products);
+    await this.updateProductsQuantitiesInStockService.execute(orderProdcts);
 
-    return createdOrder;
+    const orderDTO: IGetOrderDTO = {
+      id: createdOrder.id.toString(),
+      products: orderProdcts.map(p => {
+        const orderProduct = createdOrder.products.find(
+          product => product.name === p.name,
+        ) as any;
+
+        return {
+          name: p.name,
+          quantity: p.quantity,
+          price: orderProduct.price,
+        };
+      }),
+      total: createdOrder.getTotal(),
+    };
+
+    return orderDTO;
   }
 }
 

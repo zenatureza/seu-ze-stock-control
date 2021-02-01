@@ -1,6 +1,7 @@
 // import ICacheProvider from '../models/ICacheProvider';
 
 import ICacheProvider from '../interfaces/ICacheProvider';
+import { getCacheKey } from '../utils/getCacheKey';
 
 interface ICacheData {
   [key: string]: string;
@@ -12,20 +13,26 @@ export default class RedisCacheProviderMock implements ICacheProvider {
   constructor(cache?: ICacheData) {
     // this.cache = cache;
     if (cache) {
-      this.cache = cache;
+      for (let key in cache) {
+        let value = cache[key];
+
+        this.cache[getCacheKey(key)] = value;
+        // Use `key` and `value`
+      }
+      // this.cache = cache;
     }
   }
 
   public async save(key: string, value: any): Promise<void> {
-    this.cache[key] = JSON.stringify(value);
+    this.cache[getCacheKey(key)] = JSON.stringify(value);
   }
 
   public async exists(key: string): Promise<boolean> {
-    return !!this.cache[key];
+    return !!this.cache[getCacheKey(key)];
   }
 
   public async recover<T>(key: string): Promise<T | null> {
-    const data = this.cache[key];
+    const data = this.cache[getCacheKey(key)];
 
     if (!data) {
       return null;
@@ -40,8 +47,8 @@ export default class RedisCacheProviderMock implements ICacheProvider {
     let values: string[] = [];
 
     keys.forEach(key => {
-      if (this.cache[key]) {
-        values.push(this.cache[key] ?? '10');
+      if (this.cache[getCacheKey(key)]) {
+        values.push(this.cache[getCacheKey(key)] ?? '10');
       }
     });
 
@@ -52,8 +59,8 @@ export default class RedisCacheProviderMock implements ICacheProvider {
     let result: Map<string, string> = new Map<string, string>();
     keys.forEach((key, index) => {
       const value: string = values[index] ?? '';
-      if (typeof value === 'string' && this.cache[key]) {
-        result.set(key, value);
+      if (typeof value === 'string' && this.cache[getCacheKey(key)]) {
+        result.set(getCacheKey(key), value);
       }
     });
 

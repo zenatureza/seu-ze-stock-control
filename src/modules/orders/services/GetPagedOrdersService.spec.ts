@@ -33,3 +33,18 @@ describe('GetPagedOrdersService', () => {
     expect(orders.length).toBeGreaterThan(0);
   });
 });
+
+describe('GetPagedOrdersService - Fails', () => {
+  beforeEach(() => {
+    ordersRepositoryMock = new OrdersRepositoryMock();
+    getPagedOrdersService = new GetPagedOrdersService(ordersRepositoryMock);
+  });
+
+  it('should not be able to get orders', async () => {
+    const page = 2;
+
+    const orders = await getPagedOrdersService.execute(page);
+
+    expect(orders.length).toBe(0);
+  });
+});

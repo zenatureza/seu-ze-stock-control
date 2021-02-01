@@ -2,22 +2,24 @@ import { Connection, Channel, connect, Message, ConsumeMessage } from 'amqplib';
 import { container, inject, injectable } from 'tsyringe';
 
 import UpdateProductInStockService from '@modules/products/services/UpdateProductInStockService';
-import IQueueProvider from '../interfaces/IQueueProvider';
+import IRabbitMqProvider from '../interfaces/IRabbitMqProvider';
 
-// TODO: Refactor this file, because it's not a provider itself
-class RabbitmqServer implements IQueueProvider {
+import RabbitMqConfig from '@config/rabbitMq';
+
+class RabbitmqServer implements IRabbitMqProvider {
   private conn: Connection;
   private channel: Channel;
   public updateProductInStockService: UpdateProductInStockService;
 
-  constructor(
-    private uri: string,
-    private routingKey: string,
-    private queue: string,
-  ) {}
+  constructor(private routingKey: string, private queue: string) {}
 
   async start(): Promise<void> {
-    this.conn = await connect(this.uri);
+    // console.log(
+    //   `amqp://${RabbitMqConfig.username}:${RabbitMqConfig.password}@${RabbitMqConfig.hostname}:${RabbitMqConfig.port}`,
+    // );
+    this.conn = await connect(
+      `amqp://${RabbitMqConfig.username}:${RabbitMqConfig.password}@${RabbitMqConfig.hostname}:${RabbitMqConfig.port}`,
+    );
 
     this.conn.on('close', err => {
       console.log(`🐰 ${this.routingKey} closed: `, err);
@@ -40,6 +42,7 @@ class RabbitmqServer implements IQueueProvider {
 
   async consume(callback: (message: ConsumeMessage) => void) {
     return this.channel.consume(this.queue, message => {
+      // TODO: should log this problem!
       if (!message) return;
 
       callback(message);
@@ -48,14 +51,9 @@ class RabbitmqServer implements IQueueProvider {
   }
 }
 
-// TODO: Replace magic string with .env variables
 const stockIncrementConsumer = async () => {
   const routingKey = 'incremented';
-  const rabbitMqServer = new RabbitmqServer(
-    'amqp://guest:guest@rabbitmq:5672',
-    routingKey,
-    `${routingKey}-queue`,
-  );
+  const rabbitMqServer = new RabbitmqServer(routingKey, `${routingKey}-queue`);
 
   await rabbitMqServer.start();
   await rabbitMqServer.consume(message => {
@@ -66,11 +64,7 @@ const stockIncrementConsumer = async () => {
 
 const stockDecrementConsumer = async () => {
   const routingKey = 'decremented';
-  const rabbitMqServer = new RabbitmqServer(
-    'amqp://guest:guest@rabbitmq:5672',
-    routingKey,
-    `${routingKey}-queue`,
-  );
+  const rabbitMqServer = new RabbitmqServer(routingKey, `${routingKey}-queue`);
 
   await rabbitMqServer.start();
   await rabbitMqServer.consume(message => {
@@ -79,5 +73,5 @@ const stockDecrementConsumer = async () => {
   });
 };
 
-// stockIncrementConsumer();
-// stockDecrementConsumer();
+stockIncrementConsumer();
+stockDecrementConsumer();

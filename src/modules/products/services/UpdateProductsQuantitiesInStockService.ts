@@ -8,7 +8,11 @@ import ICreateOrderProductDTO from '@modules/orders/dtos/ICreateOrderProductDTO'
 import Product from '../infra/typeorm/schemas/Product.schema';
 import getProductUpdatedQuantity from './GetProductUpdatedQuantityService';
 import isNumeric from '@shared/infra/utils/isNumeric';
+import { getCacheKey } from '@shared/container/providers/CacheProvider/utils/getCacheKey';
 
+/**
+ * Used to update products after an order creation
+ */
 @injectable()
 class UpdateProductsQuantitiesInStockService {
   constructor(
@@ -44,8 +48,6 @@ class UpdateProductsQuantitiesInStockService {
       orderProducts.map(p => p.name),
     );
 
-    console.log('🚬 productsCache: ', productsCache);
-
     orderProducts.forEach(async orderProduct => {
       let updatedQuantity = 0;
       const productDb = productsDb.find(
@@ -53,8 +55,9 @@ class UpdateProductsQuantitiesInStockService {
       ) as any;
 
       // if cache has the most recent data..
-      if (productsCache && productsCache.has(orderProduct.name)) {
-        const currentCacheQuantity = productsCache.get(orderProduct.name);
+      const cacheKey = getCacheKey(orderProduct.name);
+      if (productsCache && productsCache.has(cacheKey)) {
+        const currentCacheQuantity = productsCache.get(cacheKey);
 
         // ensures a valid quantity
         if (isNumeric(currentCacheQuantity)) {
@@ -70,7 +73,7 @@ class UpdateProductsQuantitiesInStockService {
           );
         }
 
-        await this.cacheProvider.save(orderProduct.name, updatedQuantity);
+        await this.cacheProvider.save(cacheKey, updatedQuantity);
       }
       // stores product quantity in cache if not found
       else {

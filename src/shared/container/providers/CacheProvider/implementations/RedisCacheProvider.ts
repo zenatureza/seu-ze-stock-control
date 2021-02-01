@@ -1,6 +1,7 @@
 import Redis, { Redis as RedisClient } from 'ioredis';
 import cacheConfig from '@config/cache';
 import ICacheProvider from '../interfaces/ICacheProvider';
+import { getCacheKey, getCacheKeys } from '../utils/getCacheKey';
 
 export default class RedisCacheProvider implements ICacheProvider {
   private client: RedisClient;
@@ -10,15 +11,19 @@ export default class RedisCacheProvider implements ICacheProvider {
   }
 
   public async save(key: string, value: any): Promise<void> {
-    await this.client.set(JSON.stringify(key), JSON.stringify(value));
+    try {
+      await this.client.set(getCacheKey(key), JSON.stringify(value));
+    } catch (error) {
+      console.log('🐧 redis failed', error);
+    }
   }
 
   public async exists(key: string): Promise<boolean> {
-    return await !!+this.client.exists(key);
+    return await !!+this.client.exists(getCacheKey(key));
   }
 
   public async recover<T>(key: string): Promise<T | null> {
-    const data = await this.client.get(key);
+    const data = await this.client.get(getCacheKey(key));
 
     if (!data) {
       return null;
@@ -30,7 +35,7 @@ export default class RedisCacheProvider implements ICacheProvider {
   }
 
   public async recoverAll(keys: string[]): Promise<Map<string, string> | null> {
-    const values = await this.client.mget(keys);
+    const values = await this.client.mget(getCacheKeys(keys));
 
     if (!values) {
       return null;

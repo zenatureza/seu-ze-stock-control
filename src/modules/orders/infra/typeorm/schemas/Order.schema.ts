@@ -21,6 +21,10 @@ class Order {
 
   @CreateDateColumn()
   created_at: Date;
+
+  public getTotal(): number {
+    return parseFloat(this.total.toString());
+  }
 }
 
 export default Order;

@@ -5,21 +5,20 @@ import {
   getConnectionManager,
 } from 'typeorm';
 
-// const config: ConnectionOptions = {
-//   type: 'mongodb',
-//   host: 'mongo-db',
-//   // name: 'mongo',
-//   port: 27017,
-//   username: 'root',
-//   password: 'root',
-//   database: 'seuzestockcontrol',
-//   useUnifiedTopology: true,
-//   entities: [
-//     __dirname + '../../modules/**/infra/typeorm/schemas/*.schema.{js,ts}',
-//   ],
-//   // entities: ['src/modules/**/infra/typeorm/schemas/*.schema{.ts, .js}'],
-//   // entities: [Notification],
-// };
+const config: ConnectionOptions = {
+  type: 'mongodb',
+  host: process.env.MONGODB_HOST,
+  port: parseInt(process.env.MONGODB_PORT ?? '27017'),
+  database: process.env.MONGODB_DATABASE,
+  useUnifiedTopology: true,
+  entities: ['src/modules/**/infra/typeorm/schemas/*.schema.{ts, js}'],
+  // username: 'root',
+  // password: 'root',
+  // entities: [
+  //   __dirname + '../../modules/**/infra/typeorm/schemas/*.schema.{js,ts}',
+  // ],
+  // entities: [Notification],
+};
 
 // console.log(__dirname);
 
@@ -29,4 +28,4 @@ import {
 //   })
 //   .catch(err => console.log(err));
 
-createConnection();
+createConnection(config);

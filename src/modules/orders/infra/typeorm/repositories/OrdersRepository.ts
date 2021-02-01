@@ -26,6 +26,8 @@ class OrdersRepository implements IOrdersRepository {
     products.forEach(p => {
       const product = new Product(p.name, p.quantity);
 
+      product.price = p.price;
+
       productsDb.push(product);
     });
 

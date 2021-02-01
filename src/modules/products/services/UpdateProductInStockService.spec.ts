@@ -3,10 +3,13 @@ import 'reflect-metadata';
 import RedisCacheProviderMock from '@shared/container/providers/CacheProvider/mocks/RedisCacheProviderMock';
 import { Message } from 'amqplib';
 import UpdateProductInStockService from './UpdateProductInStockService';
+// import StockServiceLogger from '@shared/infra/logs/StockServiceLogger';
+import StockServiceLoggerMock from '@shared/infra/logs/mocks/StockServiceLoggerMock';
 
 let cacheProviderMock: RedisCacheProviderMock;
 let updateProductStockService: UpdateProductInStockService;
 let stockControlServiceMessage: Message;
+let stockServiceLogger: StockServiceLoggerMock;
 
 let kiwiCurrentQuantity = 0;
 
@@ -16,8 +19,11 @@ describe('UpdateProductInStockService', () => {
       Kiwi: kiwiCurrentQuantity.toString(),
     });
 
+    stockServiceLogger = new StockServiceLoggerMock();
+
     updateProductStockService = new UpdateProductInStockService(
       cacheProviderMock,
+      stockServiceLogger,
     );
 
     stockControlServiceMessage = {
@@ -129,15 +135,40 @@ describe('UpdateProductInStockService', () => {
 
     expect(quantity).toBe(0);
   });
+});
 
-  // TODO: ensures logged
-  it('should log when an unexpected error has occurred', async () => {
-    cacheProviderMock = null as any;
+describe('UpdateProductInStockService - Logging', () => {
+  beforeEach(() => {
+    // cacheProviderMock = null as any;
+    stockServiceLogger = new StockServiceLoggerMock();
+  });
 
-    let logFn = jest.fn();
+  it('should log when could not save product quantity', async () => {
+    cacheProviderMock.setCacheData(null as any);
 
-    // await expect(
-    //   updateProductStockService.execute(stockControlServiceMessage, 'increment')
-    // ).rejects.tocall
+    const result = await updateProductStockService.execute(
+      stockControlServiceMessage,
+      'increment',
+    );
+
+    expect(result).toBe(-1);
+    jest
+      .spyOn(stockServiceLogger, 'log')
+      .mockImplementation(() => Promise.resolve());
+  });
+
+  it('should log when stockcontrolservicemessage is invalid', async () => {
+    cacheProviderMock.setCacheData(null as any);
+    stockControlServiceMessage.content = Buffer.from('');
+
+    const result = await updateProductStockService.execute(
+      stockControlServiceMessage,
+      'increment',
+    );
+
+    expect(result).toBe(-1);
+    jest
+      .spyOn(stockServiceLogger, 'log')
+      .mockImplementation(() => Promise.resolve());
   });
 });

@@ -6,7 +6,12 @@ import IGetProductFromStockDTO from '../dtos/IGetProductFromStockDTO';
 import IProductsRepository from '../repositories/IProductsRepository';
 import ICreateOrderProductDTO from '@modules/orders/dtos/ICreateOrderProductDTO';
 import isNumeric from '@shared/infra/utils/isNumeric';
+import { getCacheKey } from '@shared/container/providers/CacheProvider/utils/getCacheKey';
 
+/**
+ * Used to retrieve products availability,
+ * and throw error when there's any product unavailable
+ */
 @injectable()
 class CheckProductsAvailabilityService {
   constructor(
@@ -19,11 +24,13 @@ class CheckProductsAvailabilityService {
 
   public async execute(
     orderProducts: ICreateOrderProductDTO[],
-  ): Promise<IGetProductFromStockDTO[] | undefined> {
+  ): Promise<IGetProductFromStockDTO[]> {
     const productsNames = orderProducts.map(p => p.name);
 
     // all products must be in the database
     const productsDb = await this.productsRepository.findByNames(productsNames);
+
+    // console.log('🪴 productsDb: ', productsDb);
 
     if (
       !productsDb ||
@@ -53,20 +60,25 @@ class CheckProductsAvailabilityService {
 
     // tries to get products most updated quantities
     const productsCache = await this.cacheProvider.recoverAll(productsNames);
+    if (orderProducts.some(x => x.name === 'Garlic' && x.quantity === 2)) {
+      console.log('🪴 productsCache: ', productsCache);
+    }
 
     const result: IGetProductFromStockDTO[] = [];
-
     let unavailableProducts: string[] = [];
+
     await orderProducts.forEach(async orderProduct => {
       const productDb = productsDb.find(
         p => p.name === orderProduct.name,
       ) as any;
 
-      let productAvailableQuantity = productDb.quantity;
+      let productAvailableQuantity = productDb.quantity as number;
 
       // tries retrieves most recent quantity
       if (productsCache && productsCache.size > 0) {
-        const productCacheValue = productsCache.get(productDb.name) as any;
+        const productCacheValue = productsCache.get(
+          getCacheKey(productDb.name),
+        ) as any;
 
         if (isNumeric(productCacheValue) && parseInt(productCacheValue) >= 0) {
           productAvailableQuantity = parseInt(productCacheValue);

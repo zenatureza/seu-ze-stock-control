@@ -15,7 +15,10 @@ class GetPagedOrderService {
     const pagedOrders = await this.ordersRepository.getPaged(page);
 
     const result: IGetOrderDTO[] = [];
-    if (pagedOrders) {
+
+    console.log('🪴 pagedOrders: ', pagedOrders);
+
+    if (pagedOrders && pagedOrders.length > 0) {
       pagedOrders.forEach(order => {
         result.push({
           id: order.id.toString(),
@@ -26,7 +29,7 @@ class GetPagedOrderService {
               quantity: product.quantity,
             };
           }),
-          total: parseFloat(order.total.toString()),
+          total: order.getTotal(),
         });
       });
     }

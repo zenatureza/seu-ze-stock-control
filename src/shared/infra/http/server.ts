@@ -10,14 +10,14 @@ import { errors } from 'celebrate';
 
 import '@shared/infra/typeorm';
 import '@shared/container';
-import '@shared/container/providers/QueueProvider/implementations/RabbitMqProvider';
+import '@shared/container/providers/RabbitMqProvider/implementations/RabbitMqProvider';
 
 const app = express();
 
 app.use(express.json());
 app.use(routes);
 
-app.get('/test', (request, response) => response.json({ message: '👨‍💻 test' }));
+// app.get('/test', (request, response) => response.json({ message: '👨‍💻 test' }));
 
 app.use(errors());
 

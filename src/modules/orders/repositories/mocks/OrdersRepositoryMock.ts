@@ -11,8 +11,15 @@ import IGetOrderDTO from '@modules/orders/dtos/IGetOrderDTO';
 class OrdersRepositoryMock implements IOrdersRepository {
   private products: Product[] = [];
   private orders: Order[] = [];
+  private ordersIds: string[] = [];
 
-  constructor(products?: ICreateOrderProductDTO[], orders?: IGetOrderDTO[]) {
+  private take = 10;
+
+  constructor(
+    products?: ICreateOrderProductDTO[],
+    orders?: IGetOrderDTO[],
+    ids?: string[],
+  ) {
     products?.forEach(productDto => {
       const product = new Product(productDto.name, productDto.quantity);
       Object.assign(product, {
@@ -45,6 +52,8 @@ class OrdersRepositoryMock implements IOrdersRepository {
 
       this.orders.push(order);
     });
+
+    this.ordersIds = ids ?? [];
   }
 
   public async create({ products, total }: ICreateOrderDTO): Promise<Order> {
@@ -68,24 +77,45 @@ class OrdersRepositoryMock implements IOrdersRepository {
     return order;
   }
 
-  public async get(id: string): Promise<Order> {
-    const order = new Order();
+  public async get(id: string): Promise<Order | undefined> {
+    console.log('🔥🔥🔥🔥🔥: ', this.ordersIds);
 
-    Object.assign(order, {
-      id: id,
-      products: this.products,
-      total: getOrderTotalPrice(
-        this.products.map(p => {
-          return [p.quantity, p.price];
-        }),
-      ),
-    });
+    if (this.ordersIds.some(currentId => currentId === id)) {
+      const order = new Order();
 
-    return order;
+      Object.assign(order, {
+        id: id,
+        products: this.products,
+        total: getOrderTotalPrice(
+          this.products.map(p => {
+            return [p.quantity, p.price];
+          }),
+        ),
+      });
+
+      return order;
+    }
+
+    return;
   }
 
   public async getPaged(page: number): Promise<Order[] | undefined> {
+    // TODO:
     return this.orders;
+  }
+
+  public async setData(products: ICreateOrderProductDTO[]) {
+    this.products = [];
+
+    products.forEach(productDto => {
+      const product = new Product(productDto.name, productDto.quantity);
+      Object.assign(product, {
+        id: new ObjectID(),
+        price: productDto.price,
+        name: productDto.name,
+      });
+      this.products.push(product);
+    });
   }
 }
 

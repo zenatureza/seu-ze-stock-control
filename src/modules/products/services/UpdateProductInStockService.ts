@@ -1,7 +1,12 @@
 import ICacheProvider from '@shared/container/providers/CacheProvider/interfaces/ICacheProvider';
+import IStockServiceLogger from '@shared/infra/logs/interfaces/IStockServiceLogger';
+import StockServiceLogger from '@shared/infra/logs/StockServiceLogger';
 import { ConsumeMessage } from 'amqplib';
 import { inject, injectable } from 'tsyringe';
 
+/**
+ * Used to update products quantities after a rabbitmq message
+ */
 @injectable()
 class UpdateProductInStockService {
   private executeOperation = {
@@ -19,12 +24,17 @@ class UpdateProductInStockService {
   constructor(
     @inject('CacheProvider')
     private cacheProvider: ICacheProvider,
+
+    @inject('StockServiceLogger')
+    private stockServiceLogger: IStockServiceLogger,
   ) {}
 
   public async execute(
     stockControlServiceMessage: ConsumeMessage,
     operation: 'increment' | 'decrement',
   ): Promise<number> {
+    // console.log(this.cacheProvider);
+
     // if receives invalid message from stock service
     if (
       !stockControlServiceMessage ||
@@ -32,10 +42,18 @@ class UpdateProductInStockService {
       !stockControlServiceMessage.content.toString()
     ) {
       // TODO: should log this problem!
+      // stock
+      console.log('Invalid message from RabbitMq stock control service.');
+      this.stockServiceLogger.log(
+        'Invalid message from RabbitMq stock control service.',
+      );
       return -1;
     }
 
-    const productName = stockControlServiceMessage.content.toString();
+    // it's necessary to remove double quotes to recover it back later
+    const productName = stockControlServiceMessage.content
+      .toString('utf8')
+      .replace(/"/g, '');
 
     // updates product quantity in cache
     let updatedQuantity = 0;
@@ -50,23 +68,27 @@ class UpdateProductInStockService {
         !this.cacheProvider.exists(productName) ||
         typeof cacheQuantity !== 'number'
       ) {
+        // console.log('could not find: ', productName);
         updatedQuantity = operation === 'decrement' ? 0 : 1;
 
-        this.cacheProvider.save(productName, updatedQuantity);
+        await this.cacheProvider.save(productName, updatedQuantity);
         return updatedQuantity;
       }
 
       updatedQuantity = this.executeOperation[operation](cacheQuantity);
-      // console.log(
-      //   `${
-      //     operation === 'increment' ? '🐬' : '🔥'
-      //   } updating ${productName} quantity to: ${updatedQuantity}`,
-      // );
-      this.cacheProvider.save(productName, updatedQuantity);
+
+      // if (productName.toLowerCase() === 'kiwi') {
+      //   console.log(
+      //     `${
+      //       operation === 'increment' ? '🐬' : '🔥'
+      //     } updating ${productName} quantity to: ${updatedQuantity}`,
+      //   );
+      // }
+      await this.cacheProvider.save(productName, updatedQuantity);
 
       return updatedQuantity;
     } catch (error) {
-      // TODO: should log this problem!
+      this.stockServiceLogger.log('');
       return -1;
     }
   }
